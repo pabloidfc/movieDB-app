@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlatziMovies</title>
+
+    <!-- <link rel="stylesheet" href="https://kit.fontawesome.com/ce5b1b1313.css" crossorigin="anonymous"> -->
+    <link rel="stylesheet" href="styles/index.css">
+    <link rel="stylesheet" href="styles/app.css">
+</head>
+<body>
+
+    <div class="main-container">
+
+        <header class="header">
+            <h1 class="header__title">PlatziMovies</h1>
+            <button class="header__arrow-back"><i class="fa-sharp fa-solid fa-arrow-left"></i></button>
+            <h1 class="header__title--category">Acción</h1>
+            <p class="header__desc">Watch your favorite movie here for free!</p>
+            <div class="header__search-container">
+                <input class="header__search" type="search" placeholder="Avengers...">
+                <button class="header__search-btn"><i class="fa-solid fa-search"></i></button>
+            </div>
+        </header>
+    
+        <main>
+            <div class="trending-section">
+                <div class="trending-section__header">
+                    <h2 class="trending-section__h2">Trending movies</h2>
+                </div>
+    
+                <article id="trending_preview" class="trending-section__preview">
+                   <!-- ... --> 
+                </article>
+    
+                <button class="trending-section__btn">See more</button>
+            </div>
+
+            <div class="categories-section">
+                <div class="categories-section__header">
+                    <h2>Categories</h2>
+                </div>
+
+                <article id="categories_preview" class="categories-section__preview">
+                    <!-- ... --> 
+                </article>
+            </div>
+        </main>
+
+    </div>
+
+    <script src="https://kit.fontawesome.com/ce5b1b1313.js" crossorigin="anonymous"></script>
+    <script src="src/secret.js"></script>
+    <script src="src/nodes.js"></script>
+    <script src="src/nav.js"></script>
+    <script src="src/index.js"></script>
+</body>
+</html>
