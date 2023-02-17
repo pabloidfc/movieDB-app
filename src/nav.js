@@ -80,7 +80,6 @@ function movieDetailPage() {
     const [_, urlHashInfo] = location.hash.split("=");
     const [movieId, movieName] = urlHashInfo.split("-");
     getMovieById(movieId);
-    getRelatedMoviesById(movieId);
 }
 
 function searchPage() {

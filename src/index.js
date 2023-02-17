@@ -11,7 +11,8 @@ function printMovies(array, container) {
         for (const movie of array) {
             let newTitle = movie.title.replace("'", "");
 
-            printedMovies += `
+            if (movie.poster_path != null) {
+                printedMovies += `
                 <div class="movie-container">
                     <img 
                         src="${imageURL + movie.poster_path}"
@@ -26,6 +27,7 @@ function printMovies(array, container) {
                     </div>
                 </div>
             `;
+            }
         }
     } else {
         printedMovies = `
@@ -119,8 +121,8 @@ async function getMovieById(id) {
             </div>
         </div>
     `;
-
     movieSection.innerHTML = printMovie;
+    getRelatedMoviesById(movie.id);
 }
 
 async function getRelatedMoviesById(id) {
@@ -132,23 +134,25 @@ async function getRelatedMoviesById(id) {
 
     let printedMovies = "";
     for (const movie of movies) {
-        printedMovies += `
+        let newTitle = movie.title.replace("'", "");
+
+        if (movie.poster_path != null) {
+            printedMovies += `
             <div class="related-movies__movie-container">
             <div>
                 <img 
                     src="${imageURL + movie.poster_path}"
                     id="${movie.id}"
-                    onclick='location.hash = "#movie=${movie.id}-${movie.title}"'
+                    onclick='location.hash = "#movie=${movie.id}-${newTitle}"'
                     class="related-movies__movie-img"
                     alt="${movie.title}"
                 >
             </div></div>
         `;
+        }
     }
 
-    container.innerHTML = printedMovies;
-
-    // <img src="https://image.tmdb.org/t/p/w300//fSRb7vyIP8rQpL0I47P3qUsEKX3.jpg" class="movie-section__img" alt="Deadpool">
+    container.innerHTML = printedMovies || "No se encontraron!";
 }
 
 async function getCategoriesPreview() {
