@@ -4,6 +4,51 @@ const imageURL500 = "https://image.tmdb.org/t/p/w500/";
 const language = "language=en";
 
 // Utils
+function loadingSkeleton() {
+    const loadingStructure = `
+    <div class="render-container">
+        <div class="movie-container--loading"></div>
+        <div class="title--loading"></div>
+        <div class="score--loading"></div>
+    </div>
+    `;
+
+    genericSection.innerHTML = loadingStructure.repeat(10);
+}
+
+function loadingSkeletonMovieDetails() {
+    const loadingStructure = `
+    <div class="movie-section__img--loading"></div>
+        <div class="movie-section__details-container--loading">
+            <div class="movie-section__header">
+                <div class="movie-section__h2--loading"></div>
+                <div class="movie-section__vote-average--loading"></div>
+            </div>
+            <div class="movie-section__body">
+                <div class="movie-section__release-date--loading"></div>
+                <div class="movie-section__desc--loading"></div>
+            </div>
+            <div class="categories-container">
+                <div class="category-container--loading"></div>
+                <div class="category-container--loading"></div>
+                <div class="category-container--loading"></div>
+            </div>
+        </div>
+        <div class="movie-section__related-movies related-movies">
+            <h3 class="related-movies__title">Related Movies</h3>
+            <div class="related-movies__container">
+                <div class="lds-ring">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+            </div>
+    </div>
+    `;
+
+    movieSection.innerHTML = loadingStructure;
+}
 
 function printMovies(array, container) {
     let printedMovies = "";
@@ -39,7 +84,6 @@ function printMovies(array, container) {
 }
 
 // API Requests
-
 async function getMoviesBySearch(query) {
     const res = await fetch(
         URL + "/search/movie?api_key=" + API_KEY + "&query=" + query + "&" + language
@@ -51,6 +95,7 @@ async function getMoviesBySearch(query) {
 }
 
 async function getMoviesByCategories(id) {
+    loadingSkeleton();
     const res = await fetch(
         URL + "/discover/movie?api_key=" + API_KEY + "&with_genres=" + id + "&" + language
     );
@@ -69,6 +114,7 @@ async function getTrendingMoviesPreview() {
 }
 
 async function getTrendingMovies() {
+    loadingSkeleton();
     const res = await fetch(URL + "/trending/movie/day?api_key=" + API_KEY + "&" + language);
     const data = await res.json();
     const movies = data.results;
@@ -77,6 +123,7 @@ async function getTrendingMovies() {
 }
 
 async function getMovieById(id) {
+    loadingSkeletonMovieDetails();
     const res = await fetch(URL + "/movie/" + id + "?api_key=" + API_KEY + "&" + language);
     const movie = await res.json();
 
@@ -107,7 +154,7 @@ async function getMovieById(id) {
                 <div class="movie-section__vote-average"><i class="movie-section__icon fa-solid fa-star"></i>${movie.vote_average.toFixed(1)}</div>
             </div>
             <div class="movie-section__body">
-            <p class="movie-section__release-date">Release date: <span class="release-date">${movie.release_date}</span></p>
+                <p class="movie-section__release-date">Release date: <span class="release-date">${movie.release_date}</span></p>
                 <p class="movie-section__desc">${movie.overview}</p>
                 <div class="categories-container">
                     ${movieGenres}
