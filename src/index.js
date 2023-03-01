@@ -270,7 +270,7 @@ async function getPaginatedTrendingMovies() {
 
     if (scrollIsBottom) {
         const res = await fetch(
-            URL + "/trending/movie/day?api_key=" + API_KEY + "&" + language + "&" + "page=" + "&page=" + actualPage
+            URL + "/trending/movie/day?api_key=" + API_KEY + "&" + language + "&page=" + actualPage
         );
 
         const data = await res.json();
