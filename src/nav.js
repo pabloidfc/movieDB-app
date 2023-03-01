@@ -99,6 +99,9 @@ function searchPage() {
 
     const [_, query] = location.hash.split("=");
     getMoviesBySearch(query);
+
+    infiniteScroll = getPaginatedMoviesBySearch(query);
+    window.addEventListener("scroll", infiniteScroll);
 }
 
 function categoryPage() {

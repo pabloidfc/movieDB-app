@@ -259,6 +259,7 @@ async function getMovieById(id) {
 // API Requests => Infinite Scrolling
 
 async function getPaginatedTrendingMovies() {
+    actualPage = Number(page + 1);
     const {
         scrollTop,
         clientHeight,
@@ -269,14 +270,42 @@ async function getPaginatedTrendingMovies() {
 
     if (scrollIsBottom) {
         const res = await fetch(
-            URL + "/trending/movie/day?api_key=" + API_KEY + "&" + language + "&" + "page=" + Number(page+1)
-            );
-            const data = await res.json();
+            URL + "/trending/movie/day?api_key=" + API_KEY + "&" + language + "&" + "page=" + actualPage
+        );
+
+        const data = await res.json();
         const movies = data.results;
         
-        printMovies(movies, genericSection, false);
+        if (!(actualPage == data.total_pages)) {
+            printMovies(movies, genericSection, false);
+            page++;
+        }
+    }
+}
 
-        page++;
+function getPaginatedMoviesBySearch(query) {
+    return async function () {
+        actualPage = Number(page + 1);
+        const {
+            scrollTop,
+            clientHeight,
+            scrollHeight
+        } = document.documentElement;
+    
+        const scrollIsBottom = (scrollTop + clientHeight) >= (scrollHeight);
+
+        if (scrollIsBottom) {
+            const res = await fetch(
+                URL + "/search/movie?api_key=" + API_KEY + "&query=" + query + "&" + language + actualPage
+            );
+            const data = await res.json();
+            const movies = data.results;
+
+            if (!(actualPage == data.total_pages)) {
+                printMovies(movies, genericSection, false);
+                page++;
+            }
+        }
     }
 }
 
