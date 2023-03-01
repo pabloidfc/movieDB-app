@@ -259,51 +259,55 @@ async function getMovieById(id) {
 // API Requests => Infinite Scrolling
 
 async function getPaginatedTrendingMovies() {
-    actualPage = Number(page + 1);
+    const nextPage = Number(page + 1);
     const {
         scrollTop,
         clientHeight,
         scrollHeight
     } = document.documentElement;
 
-    const scrollIsBottom = (scrollTop + clientHeight) >= (scrollHeight);
+    const scrollIsBottom = (scrollTop + clientHeight) >= (scrollHeight - 10);
 
     if (scrollIsBottom) {
         const res = await fetch(
-            URL + "/trending/movie/day?api_key=" + API_KEY + "&" + language + "&page=" + actualPage
+            URL + "/trending/movie/day?api_key=" + API_KEY + "&" + language + "&page=" + nextPage
         );
 
         const data = await res.json();
         const movies = data.results;
         
-        if (!(actualPage == data.total_pages)) {
+        if (!(nextPage == data.total_pages)) {
             printMovies(movies, genericSection, false);
             page++;
+        } else {
+            window.removeEventListener("scroll", infiniteScroll);
         }
     }
 }
 
 function getPaginatedMoviesBySearch(query) {
     return async function () {
-        actualPage = Number(page + 1);
+        const nextPage = Number(page + 1);
         const {
             scrollTop,
             clientHeight,
             scrollHeight
         } = document.documentElement;
     
-        const scrollIsBottom = (scrollTop + clientHeight) >= (scrollHeight);
+        const scrollIsBottom = (scrollTop + clientHeight) >= (scrollHeight - 10);
 
         if (scrollIsBottom) {
             const res = await fetch(
-                URL + "/search/movie?api_key=" + API_KEY + "&query=" + query + "&" + language + "&page=" + actualPage
+                URL + "/search/movie?api_key=" + API_KEY + "&query=" + query + "&" + language + "&page=" + nextPage
             );
             const data = await res.json();
             const movies = data.results;
 
-            if (!(actualPage == data.total_pages)) {
+            if (!(nextPage == data.total_pages)) {
                 printMovies(movies, genericSection, false);
                 page++;
+            } else {
+                window.removeEventListener("scroll", infiniteScroll);
             }
         }
     }
@@ -311,25 +315,27 @@ function getPaginatedMoviesBySearch(query) {
 
 function getPaginatedMoviesByCategories(id) {
     return async function () {
-        actualPage = Number(page + 1);
+        const nextPage = Number(page + 1);
         const {
             scrollTop,
             clientHeight,
             scrollHeight
         } = document.documentElement;
     
-        const scrollIsBottom = (scrollTop + clientHeight) >= (scrollHeight);
+        const scrollIsBottom = (scrollTop + clientHeight) >= (scrollHeight - 10);
 
         if (scrollIsBottom) {
             const res = await fetch(
-                URL + "/discover/movie?api_key=" + API_KEY + "&with_genres=" + id + "&" + language + "&page=" + actualPage
+                URL + "/discover/movie?api_key=" + API_KEY + "&with_genres=" + id + "&" + language + "&page=" + nextPage
             );
             const data = await res.json();
             const movies = data.results;
 
-            if (!(actualPage == data.total_pages)) {
+            if (!(nextPage == data.total_pages)) {
                 printMovies(movies, genericSection, false);
                 page++;
+            } else {
+                window.removeEventListener("scroll", infiniteScroll);
             }
         }
     }
