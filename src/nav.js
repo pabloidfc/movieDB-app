@@ -1,7 +1,12 @@
 let pagesVisited = 0;
+let page = 1;
+let infiniteScroll;
 
 function navigator() {
     pagesVisited++;
+    page = 1;
+
+    window.removeEventListener("scroll", infiniteScroll);
 
     const sections = {
         "#trends"   : () => trendsPage(),
@@ -36,9 +41,8 @@ function homePage() {
     headerDescription.classList.remove("d-none");
     categoriesSectionTitle.classList.remove("d-none");
     
+    headerGenericTitle.classList.add("d-none");
     headerArrowBack.classList.add("d-none");
-    headerCategoryTitle.classList.add("d-none");
-    headerTrendingTitle.classList.add("d-none");
     genericSection.classList.add("d-none");
     movieSection.classList.add("d-none");
     
@@ -49,29 +53,28 @@ function homePage() {
 
 function trendsPage() {
     headerArrowBack.classList.remove("d-none");
-    headerCategoryTitle.classList.remove("d-none");
+    headerGenericTitle.classList.remove("d-none");
     genericSection.classList.remove("d-none");
-    headerTrendingTitle.classList.remove("d-none");
 
-    // headerTitle.classList.add("d-none");
-    // headerDescription.classList.add("d-none");
-    headerCategoryTitle.classList.add("d-none");
     headerSearchContainer.classList.add("d-none");
     trendingSection.classList.add("d-none");
     categoriesPreviewContainer.classList.add("d-none");
     categoriesSectionTitle.classList.add("d-none");
     movieSection.classList.add("d-none");
 
+    headerGenericTitle.innerHTML = "Trending Movies"
     getTrendingMovies();
+
+    infiniteScroll = getPaginatedTrendingMovies;
+    window.addEventListener("scroll", infiniteScroll);
 }
 
 function movieDetailPage() {
     headerArrowBack.classList.remove("d-none");
     movieSection.classList.remove("d-none");
 
+    headerGenericTitle.classList.add("d-none");
     headerSearchContainer.classList.add("d-none");
-    headerCategoryTitle.classList.add("d-none");
-    headerTrendingTitle.classList.add("d-none");
     trendingSection.classList.add("d-none");
     categoriesSection.classList.add("d-none");
     genericSection.classList.add("d-none");
@@ -89,11 +92,9 @@ function searchPage() {
     headerSearchContainer.classList.remove("d-none");
     genericSection.classList.remove("d-none");
     
-    headerCategoryTitle.classList.add("d-none");
     trendingSection.classList.add("d-none");
     categoriesPreviewContainer.classList.add("d-none");
     categoriesSectionTitle.classList.add("d-none");
-    headerTrendingTitle.classList.add("d-none");
     movieSection.classList.add("d-none");
 
     const [_, query] = location.hash.split("=");
@@ -102,16 +103,13 @@ function searchPage() {
 
 function categoryPage() {
     headerArrowBack.classList.remove("d-none");
-    headerCategoryTitle.classList.remove("d-none");
+    headerGenericTitle.classList.remove("d-none");
     genericSection.classList.remove("d-none");
     
-    // headerTitle.classList.add("d-none");
-    // headerDescription.classList.add("d-none");
     headerSearchContainer.classList.add("d-none");
     trendingSection.classList.add("d-none");
     categoriesPreviewContainer.classList.add("d-none");
     categoriesSectionTitle.classList.add("d-none");
-    headerTrendingTitle.classList.add("d-none");
     movieSection.classList.add("d-none");
     
     
@@ -120,8 +118,8 @@ function categoryPage() {
     getMoviesByCategories(categoryId);
 
     typeof categoryName != "string"
-        ? headerCategoryTitle.innerHTML = "" 
-        : headerCategoryTitle.innerHTML = categoryName.replace("%20", " ");
+        ? headerGenericTitle.innerHTML = "" 
+        : headerGenericTitle.innerHTML = categoryName.replace("%20", " ");
 }
 
 /*

@@ -5,8 +5,7 @@ const headerSearchContainer      = document.querySelector(".header__search-conta
 const headerSearch               = document.querySelector(".header__search");
 const headerSearchBtn            = document.querySelector(".header__search-btn");
 const headerArrowBack            = document.querySelector(".header__arrow-back");
-const headerCategoryTitle        = document.querySelector(".header__title--category");
-const headerTrendingTitle        = document.querySelector(".header__title--trending");
+const headerGenericTitle        = document.querySelector(".header__title--gereric");
 
 // Main Nodes
 const trendingSection            = document.querySelector(".trending-section");

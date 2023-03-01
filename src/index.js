@@ -2,15 +2,30 @@ const URL = "https://api.themoviedb.org/3";
 const imageURL = "https://image.tmdb.org/t/p/w300/";
 const imageURL500 = "https://image.tmdb.org/t/p/w500/";
 const language = "language=en";
+const observer = new IntersectionObserver(renderImage, {
+    root: null,
+    rootMargin: "300px",
+    threshold: 0
+});
 
 // Utils
+function renderImage(entries) {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const url = entry.target.dataset.img;
+            entry.target.src = url;
+            observer.unobserve(entry.target);
+        }
+    })
+}
+
 function loadingSkeleton() {
     const loadingStructure = `
-    <div class="render-container">
-        <div class="movie-container--loading"></div>
-        <div class="title--loading"></div>
-        <div class="score--loading"></div>
-    </div>
+        <div class="render-container">
+            <div class="movie-container--loading"></div>
+            <div class="title--loading"></div>
+            <div class="score--loading"></div>
+        </div>
     `;
 
     genericSection.innerHTML = loadingStructure.repeat(10);
@@ -50,7 +65,7 @@ function loadingSkeletonMovieDetails() {
     movieSection.innerHTML = loadingStructure;
 }
 
-function printMovies(array, container) {
+function printMovies(array, container, clean = true) {
     let printedMovies = "";
     if (array.length !== 0) {
         for (const movie of array) {
@@ -60,7 +75,7 @@ function printMovies(array, container) {
                 printedMovies += `
                 <div class="movie-container">
                     <img 
-                        src="${imageURL + movie.poster_path}"
+                        data-img="${imageURL + movie.poster_path}"
                         id="${movie.id}"
                         onclick='location.hash = "#movie=${movie.id}-${newTitle}"'
                         class="movie-container__movie-img"
@@ -76,14 +91,54 @@ function printMovies(array, container) {
         }
     } else {
         printedMovies = `
-            <h2>Lo sentimos no hemos encontrado nada! 😢</h2>
+            <h2>No results found! 😢</h2>
         `;
     }
 
-    container.innerHTML = printedMovies;
+    clean
+    ? container.innerHTML = printedMovies 
+    : container.innerHTML += printedMovies;
+
+    // Observer
+    document.querySelectorAll(".movie-container__movie-img")
+    .forEach(e => {
+        observer.observe(e);
+    });
 }
 
 // API Requests
+async function getTrendingMoviesPreview() {
+    const res = await fetch(URL + "/trending/movie/day?api_key=" + API_KEY + "&" + language);
+    const data = await res.json();
+    const movies = data.results;
+
+    printMovies(movies, trendingPreviewContainer);
+}
+
+async function getCategoriesPreview() {
+    const res = await fetch(URL + "/genre/movie/list?api_key=" + API_KEY + "&" + language);
+    const data = await res.json();
+    
+    const categories = data.genres;
+    
+    let renderCategories = "";
+    for (const category of categories) {
+        renderCategories += `
+        <div class="category-container">
+            <h3 
+                id="${category.id}"
+                onclick='location.hash = "#category=${category.id}-${category.name}"'
+                class="category-title"
+            >
+                ${category.name}
+            </h3>
+        </div>
+        `;
+    }
+
+    categoriesPreviewContainer.innerHTML = renderCategories;
+}
+
 async function getMoviesBySearch(query) {
     const res = await fetch(
         URL + "/search/movie?api_key=" + API_KEY + "&query=" + query + "&" + language
@@ -105,14 +160,6 @@ async function getMoviesByCategories(id) {
     printMovies(movies, genericSection);
 }
 
-async function getTrendingMoviesPreview() {
-    const res = await fetch(URL + "/trending/movie/day?api_key=" + API_KEY + "&" + language);
-    const data = await res.json();
-    const movies = data.results;
-
-    printMovies(movies, trendingPreviewContainer);
-}
-
 async function getTrendingMovies() {
     loadingSkeleton();
     const res = await fetch(URL + "/trending/movie/day?api_key=" + API_KEY + "&" + language);
@@ -120,6 +167,42 @@ async function getTrendingMovies() {
     const movies = data.results;
 
     printMovies(movies, genericSection);
+}
+
+async function getRelatedMoviesById(id) {
+    const res = await fetch(URL + "/movie/" + id + "/similar?api_key=" + API_KEY + "&" + language);
+    const data = await res.json();
+
+    const movies = data.results;
+    const container = document.querySelector(".related-movies__container");
+
+    let printedMovies = "";
+    for (const movie of movies) {
+        let newTitle = movie.title.replace("'", "");
+
+        if (movie.poster_path != null) {
+            printedMovies += `
+            <div class="related-movies__movie-container">
+            <div>
+                <img 
+                    data-img="${imageURL + movie.poster_path}"
+                    id="${movie.id}"
+                    onclick='location.hash = "#movie=${movie.id}-${newTitle}"'
+                    class="related-movies__movie-img"
+                    alt="${movie.title}"
+                >
+            </div></div>
+        `;
+        }
+    }
+
+    container.innerHTML = printedMovies || "No results found!";
+
+    // Observer
+    document.querySelectorAll(".related-movies__movie-img")
+    .forEach(e => {
+        observer.observe(e);
+    });
 }
 
 async function getMovieById(id) {
@@ -163,68 +246,40 @@ async function getMovieById(id) {
         </div>
         <div class="movie-section__related-movies related-movies">
             <h3 class="related-movies__title">Related Movies</h3>
-            <div class="related-movies__container">
-                
+            <div class="related-movies__container">        
             </div>
         </div>
     `;
+    
     movieSection.innerHTML = printMovie;
     getRelatedMoviesById(movie.id);
 }
 
-async function getRelatedMoviesById(id) {
-    const res = await fetch(URL + "/movie/" + id + "/similar?api_key=" + API_KEY + "&" + language);
-    const data = await res.json();
 
-    const movies = data.results;
-    const container = document.querySelector(".related-movies__container");
+// API Requests => Infinite Scrolling
 
-    let printedMovies = "";
-    for (const movie of movies) {
-        let newTitle = movie.title.replace("'", "");
+async function getPaginatedTrendingMovies() {
+    const {
+        scrollTop,
+        clientHeight,
+        scrollHeight
+    } = document.documentElement;
 
-        if (movie.poster_path != null) {
-            printedMovies += `
-            <div class="related-movies__movie-container">
-            <div>
-                <img 
-                    src="${imageURL + movie.poster_path}"
-                    id="${movie.id}"
-                    onclick='location.hash = "#movie=${movie.id}-${newTitle}"'
-                    class="related-movies__movie-img"
-                    alt="${movie.title}"
-                >
-            </div></div>
-        `;
-        }
+    const scrollIsBottom = (scrollTop + clientHeight) >= (scrollHeight);
+
+    if (scrollIsBottom) {
+        const res = await fetch(
+            URL + "/trending/movie/day?api_key=" + API_KEY + "&" + language + "&" + "page=" + Number(page+1)
+            );
+            const data = await res.json();
+        const movies = data.results;
+        
+        printMovies(movies, genericSection, false);
+
+        page++;
     }
-
-    container.innerHTML = printedMovies || "No se encontraron!";
-}
-
-async function getCategoriesPreview() {
-    const res = await fetch(URL + "/genre/movie/list?api_key=" + API_KEY + "&" + language);
-    const data = await res.json();
-    
-    const categories = data.genres;
-    
-    let renderCategories = "";
-    for (const category of categories) {
-        renderCategories += `
-        <div class="category-container">
-            <h3 
-                id="${category.id}"
-                onclick='location.hash = "#category=${category.id}-${category.name}"'
-                class="category-title"
-            >
-                ${category.name}
-            </h3>
-        </div>
-        `;
-    }
-
-    categoriesPreviewContainer.innerHTML = renderCategories;
 }
 
 document.addEventListener("DOMContentLoaded", navigator);
 window.addEventListener("hashchange", navigator, false);
+window.addEventListener("scroll", infiniteScroll, false);
