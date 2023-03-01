@@ -123,6 +123,9 @@ function categoryPage() {
     typeof categoryName != "string"
         ? headerGenericTitle.innerHTML = "" 
         : headerGenericTitle.innerHTML = categoryName.replace("%20", " ");
+
+    infiniteScroll = getPaginatedMoviesByCategories(categoryId);
+    window.addEventListener("scroll", infiniteScroll);
 }
 
 /*
