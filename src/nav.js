@@ -6,7 +6,8 @@ function navigator() {
     pagesVisited++;
     page = 1;
 
-    window.removeEventListener("scroll", infiniteScroll);
+    window.removeEventListener("scroll", infiniteScroll, {passive: false});
+    infiniteScroll = undefined;
 
     const sections = {
         "#trends"   : () => trendsPage(),
@@ -62,11 +63,11 @@ function trendsPage() {
     categoriesSectionTitle.classList.add("d-none");
     movieSection.classList.add("d-none");
 
-    headerGenericTitle.innerHTML = "Trending Movies"
+    headerGenericTitle.innerHTML = "Trending Movies";
     getTrendingMovies();
 
     infiniteScroll = getPaginatedTrendingMovies;
-    window.addEventListener("scroll", infiniteScroll);
+    window.addEventListener("scroll", infiniteScroll, {passive: false});
 }
 
 function movieDetailPage() {
@@ -101,7 +102,7 @@ function searchPage() {
     getMoviesBySearch(query);
 
     infiniteScroll = getPaginatedMoviesBySearch(query);
-    window.addEventListener("scroll", infiniteScroll);
+    window.addEventListener("scroll", infiniteScroll, {passive: false});
 }
 
 function categoryPage() {
@@ -125,7 +126,7 @@ function categoryPage() {
         : headerGenericTitle.innerHTML = categoryName.replace("%20", " ");
 
     infiniteScroll = getPaginatedMoviesByCategories(categoryId);
-    window.addEventListener("scroll", infiniteScroll);
+    window.addEventListener("scroll", infiniteScroll, {passive: false});
 }
 
 /*

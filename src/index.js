@@ -1,3 +1,32 @@
+// LS
+function getLikedMovies() {
+    let movieList;
+    const list = localStorage.getItem("liked_movies");
+
+    if(list) {
+        movieList = JSON.parse(list);
+    } else {
+        movieList = {};
+    }
+    return movieList;
+}
+
+function likeMovie(movie) {
+    const list = getLikedMovies();
+
+    if(list[movie.id]) {
+        delete list[movie.id];
+    } else {   
+        list[movie.id] = movie;
+    }
+
+    console.log({list});
+
+    localStorage.setItem("liked_movies", JSON.stringify(list));
+}
+
+
+// Const
 const URL = "https://api.themoviedb.org/3";
 const imageURL = "https://image.tmdb.org/t/p/w300/";
 const imageURL500 = "https://image.tmdb.org/t/p/w500/";
@@ -16,7 +45,7 @@ function renderImage(entries) {
             entry.target.src = url;
             observer.unobserve(entry.target);
         }
-    })
+    });
 }
 
 function loadingSkeleton() {
@@ -67,7 +96,12 @@ function loadingSkeletonMovieDetails() {
 
 function printMovies(array, container, clean = true) {
     let printedMovies = "";
+    let objMovies = {};
+    let moviesFound = false;
+
     if (array.length !== 0) {
+        moviesFound = true;
+
         for (const movie of array) {
             let newTitle = movie.title.replace("'", "");
 
@@ -85,8 +119,18 @@ function printMovies(array, container, clean = true) {
                         <p class="movie-container__movie-title">${movie.title}</p>
                         <p class="movie-container__movie-vote_average"><i class="fa-solid fa-star"></i> ${movie.vote_average.toFixed(1)}</p>
                     </div>
+                    <button class="movie-container__like-btn"></button>
                 </div>
             `;
+
+            // Elemento creado para poder identificar de manera rápida
+            // una imagen
+            objMovies[movie.id] = {
+                id: movie.id,
+                title: movie.title,
+                poster_path: movie.poster_path,
+                vote_average: movie.vote_average
+            }
             }
         }
     } else {
@@ -98,6 +142,22 @@ function printMovies(array, container, clean = true) {
     clean
     ? container.innerHTML = printedMovies 
     : container.innerHTML += printedMovies;
+
+    if(moviesFound) {
+        let btn = document.querySelectorAll(".movie-container__like-btn");
+        btn.forEach(button => {
+            button.addEventListener("click", (e) => {
+                const container = e.target.parentElement;
+                const img = container.firstElementChild;
+                const elementClicked = objMovies[img.id];
+
+                likeMovie(elementClicked);
+
+                e.target.classList.add("movie-container__liked-btn");
+                e.stopPropagation();
+            });
+        });
+    }
 
     // Observer
     document.querySelectorAll(".movie-container__movie-img")
@@ -191,6 +251,7 @@ async function getRelatedMoviesById(id) {
                     class="related-movies__movie-img"
                     alt="${movie.title}"
                 >
+                <button class="movie-container__like-btn"></button>
             </div></div>
         `;
         }
@@ -257,7 +318,6 @@ async function getMovieById(id) {
 
 
 // API Requests => Infinite Scrolling
-
 async function getPaginatedTrendingMovies() {
     const nextPage = Number(page + 1);
     const {
@@ -266,7 +326,7 @@ async function getPaginatedTrendingMovies() {
         scrollHeight
     } = document.documentElement;
 
-    const scrollIsBottom = (scrollTop + clientHeight) >= (scrollHeight - 10);
+    const scrollIsBottom = (scrollTop + clientHeight) >= (scrollHeight - 8);
 
     if (scrollIsBottom) {
         const res = await fetch(
@@ -280,7 +340,7 @@ async function getPaginatedTrendingMovies() {
             printMovies(movies, genericSection, false);
             page++;
         } else {
-            window.removeEventListener("scroll", infiniteScroll);
+            window.removeEventListener("scroll", infiniteScroll, {passive: false});
         }
     }
 }
@@ -294,7 +354,7 @@ function getPaginatedMoviesBySearch(query) {
             scrollHeight
         } = document.documentElement;
     
-        const scrollIsBottom = (scrollTop + clientHeight) >= (scrollHeight - 10);
+        const scrollIsBottom = (scrollTop + clientHeight) >= (scrollHeight - 8);
 
         if (scrollIsBottom) {
             const res = await fetch(
@@ -307,7 +367,7 @@ function getPaginatedMoviesBySearch(query) {
                 printMovies(movies, genericSection, false);
                 page++;
             } else {
-                window.removeEventListener("scroll", infiniteScroll);
+                window.removeEventListener("scroll", infiniteScroll, {passive: false});
             }
         }
     }
@@ -322,20 +382,21 @@ function getPaginatedMoviesByCategories(id) {
             scrollHeight
         } = document.documentElement;
     
-        const scrollIsBottom = (scrollTop + clientHeight) >= (scrollHeight - 10);
+        const scrollIsBottom = (scrollTop + clientHeight) >= (scrollHeight - 8);
 
         if (scrollIsBottom) {
             const res = await fetch(
                 URL + "/discover/movie?api_key=" + API_KEY + "&with_genres=" + id + "&" + language + "&page=" + nextPage
-            );
-            const data = await res.json();
-            const movies = data.results;
-
-            if (!(nextPage == data.total_pages)) {
-                printMovies(movies, genericSection, false);
-                page++;
-            } else {
-                window.removeEventListener("scroll", infiniteScroll);
+                );
+                const data = await res.json();
+                const movies = data.results;
+                
+                if (!(nextPage == data.total_pages)) {
+                    console.log(data.page);
+                    printMovies(movies, genericSection, false);
+                    page++;
+                } else {
+                window.removeEventListener("scroll", infiniteScroll, {passive: false});
             }
         }
     }
@@ -343,4 +404,3 @@ function getPaginatedMoviesByCategories(id) {
 
 document.addEventListener("DOMContentLoaded", navigator);
 window.addEventListener("hashchange", navigator, false);
-window.addEventListener("scroll", infiniteScroll, false);
